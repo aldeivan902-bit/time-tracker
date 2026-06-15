@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Team Time Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        /* Dark mode */
+        body.dark {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        body.dark .card {
+            background: #2d2d2d;
+            color: #e0e0e0;
+        }
+        
+        body.dark button.btn {
+            background: #3d3d3d;
+            color: #e0e0e0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: background 0.3s;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .user-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .user-section input {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        button {
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        
+        button.btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+        
+        button.btn-small {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #6c757d;
+            color: white;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        .btn-in { background: #28a745; }
+        .btn-out { background: #dc3545; }
+        .btn-break { background: #ffc107; color: #333; }
+        .btn-edit { background: #17a2b8; }
+        
+        .status-card {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+        
+        body.dark .status-card {
+            background: #1a3a4a;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 8px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .team-status {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .team-member {
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-working { background: #28a745; color: white; }
+        .status-break { background: #ffc107; color: #333; }
+        .status-off { background: #6c757d; color: white; }
+        
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        body.dark .warning {
+            background: #3a2a00;
+            color: #ffc107;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .nav-links a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .settings-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .button-grid { grid-template-columns: 1fr 1fr; }
+            .stat-value { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <button class="settings-icon" onclick="toggleSettings()">⚙️</button>
+    
+    <div class="container">
+        <h1>⏰ Team Time Tracker</h1>
+        
+        <!-- Settings Panel (hidden by default) -->
+        <div id="settingsPanel" class="card" style="display: none;">
+            <h2>⚙️ Settings</h2>
+            <div class="user-section">
+                <label>
+                    <input type="checkbox" id="enableReminder" onchange="saveSettings()">
+                    Enable daily reminder at 5:00 PM
+                </label>
+            </div>
+            <div class="user-section" style="margin-top: 10px;">
+                <label>
+                    <input type="checkbox" id="darkMode" onchange="toggleDarkMode()">
+                    Dark Mode
+                </label>
+            </div>
+            <div class="user-section" style="margin-top: 10px;">
+                <button class="btn-small" onclick="exportToCSV()">📥 Export All Data to CSV</button>
+                <button class="btn-small" style="background: #dc3545;" onclick="deleteAllData()">🗑️ Delete All Data</button>
+            </div>
+        </div>
+        
+        <!-- User Selection -->
+        <div class="card">
+            <div class="user-section">
+                <input type="text" id="userName" placeholder="Your name (Alex or Jamie)" autocomplete="off">
+                <button class="btn-small" onclick="setUser()">Set</button>
+            </div>
+        </div>
+        
+        <!-- Current Status -->
+        <div id="statusCard" class="card status-card">
+            <p>👋 Enter your name to start</p>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="card">
+            <div class="button-grid">
+                <button onclick="clockIn()" class="btn btn-in">⏰ Clock In</button>
+                <button onclick="breakStart()" class="btn btn-break">🍽️ Break Start</button>
+                <button onclick="breakEnd()" class="btn btn-break">▶️ End Break</button>
+                <button onclick="clockOut()" class="btn btn-out">⏰ Clock Out</button>
+                <button onclick="window.location.href='history.html'" class="btn btn-edit">📜 History</button>
+            </div>
+        </div>
+        
+        <!-- Today's Stats -->
+        <div class="card">
+            <h2>📊 Today's Stats</h2>
+            <div id="todayStats" class="stats-grid">
+                <div class="stat-item">
+                    <div>Status</div>
+                    <div class="stat-value" id="todayStatus">—</div>
+                </div>
+                <div class="stat-item">
+                    <div>Worked Today</div>
+                    <div class="stat-value" id="todayHours">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>Break Taken</div>
+                    <div class="stat-value" id="todayBreak">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>Overtime</div>
+                    <div class="stat-value" id="todayOvertime">0</div>
+                </div>
+            </div>
+            <div id="overbreakWarning" style="display: none;" class="warning">⚠️ Warning: You took extra break time</div>
+        </div>
+        
+        <!-- Monthly Summary -->
+        <div class="card">
+            <h2>📈 Monthly Summary</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div>Days Worked</div>
+                    <div class="stat-value" id="monthDays">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>Total Hours</div>
+                    <div class="stat-value" id="monthHours">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>Total Overtime</div>
+                    <div class="stat-value" id="monthOvertime">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>Overbreak Days</div>
+                    <div class="stat-value" id="monthOverbreak">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Real-time Team Status -->
+        <div class="card">
+            <h2>👥 Team Status (Live)</h2>
+            <div id="teamStatus" class="team-status">
+                <p>Loading team status...</p>
+            </div>
+        </div>
+        
+        <div class="nav-links">
+            <a href="history.html">📜 View Full History</a>
+        </div>
+    </div>
+    
+    <!-- Summary Modal (hidden by default) -->
+    <div id="summaryModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; max-width: 500px; margin: 20px; padding: 20px; border-radius: 16px; max-height: 80%; overflow-y: auto;">
+            <div id="summaryContent"></div>
+            <button onclick="closeSummary()" class="btn" style="margin-top: 15px; width: 100%;">✓ OK</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>
